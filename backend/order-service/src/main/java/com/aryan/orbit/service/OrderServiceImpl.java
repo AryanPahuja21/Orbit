@@ -1,11 +1,14 @@
 package com.aryan.orbit.service;
 
 import com.aryan.orbit.model.Order;
+import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -35,5 +38,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean updateStatus(Long orderId, OrderStatus newStatus) {
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+        if (optionalOrder.isPresent()) {
+            Order order = optionalOrder.get();
+            order.setStatus(newStatus);
+            order.setUpdatedAt(LocalDateTime.now()); // optional if you track updated time
+            orderRepository.save(order);
+            return true;
+        }
+
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 package com.aryan.orbit.controller;
 
 import com.aryan.orbit.model.Order;
+import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +40,19 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{orderId}/status")
+    public ResponseEntity<OrderStatus> getStatus(@PathVariable Long orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return order != null
+                ? ResponseEntity.ok(order.getStatus())
+                : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatus newStatus) {
+        boolean updated = orderService.updateStatus(orderId, newStatus);
+        return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }
