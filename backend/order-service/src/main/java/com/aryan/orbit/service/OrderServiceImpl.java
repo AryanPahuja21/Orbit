@@ -47,7 +47,7 @@ public class OrderServiceImpl implements OrderService {
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
             order.setStatus(newStatus);
-            order.setUpdatedAt(LocalDateTime.now()); // optional if you track updated time
+            order.setUpdatedAt(LocalDateTime.now());
             orderRepository.save(order);
             return true;
         }
