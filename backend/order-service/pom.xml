@@ -40,7 +40,7 @@
 			<artifactId>jakarta.validation-api</artifactId>
 		</dependency>
 
-		<!-- PostgreSQL -->
+		<!-- PostgresSQL -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -52,11 +52,11 @@
 			<version>1.18.30</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 		</dependency>
+
 
 		<!--		&lt;!&ndash; Kafka &ndash;&gt;-->
 <!--		<dependency>-->
