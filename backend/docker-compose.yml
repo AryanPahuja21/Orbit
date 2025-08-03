@@ -2,10 +2,8 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - ./order-service/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -18,13 +16,10 @@ services:
       context: ./order-service
       dockerfile: Dockerfile
     container_name: order-service
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    env_file:
+      - ./order-service/.env
     ports:
-      - "8081:8080"
+      - "8081:8081"
     depends_on:
       - postgres
     networks:
