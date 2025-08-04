@@ -26,17 +26,5 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
-
-    public OrderStatus getStatus(){
-        return this.status;
-    }
-
-    public void setStatus(OrderStatus status){
-        this.status = status;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt){
-        this.updatedAt = updatedAt;
-    }
 }
 
