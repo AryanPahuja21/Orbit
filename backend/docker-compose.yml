@@ -25,6 +25,20 @@ services:
     networks:
       - orbit-network
 
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    env_file:
+      - ./notification-service/.env
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres
+    networks:
+      - orbit-network
+
 volumes:
   postgres_data:
 
