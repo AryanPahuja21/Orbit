@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, User, Orbit, LogOut, Sun, Moon } from "lucide-react";
+import { Bell, User, LogOut, Sun, Moon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 
@@ -21,15 +21,12 @@ const Header: React.FC<HeaderProps> = ({
     <header className="shadow-sm border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50 backdrop-blur-sm bg-white/95 dark:bg-slate-900/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Orbit className="h-5 w-5 text-white" />
-            </div>
+          <div className="flex items-center mr-36">
+            <img src="/logo.png" alt="Orbit Logo" className="w-10 h-10 mt-1" />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               Orbit
             </h1>
           </div>
-
           <nav className="hidden md:flex space-x-8">
             <button
               onClick={() => onViewChange("tracking")}
