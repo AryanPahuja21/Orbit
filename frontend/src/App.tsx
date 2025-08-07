@@ -4,7 +4,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import LoginForm from "./components/LoginForm";
 import Header from "./components/Header";
 import OrderTracker from "./components/OrderTracker";
-import Notifications from "./components/Notifications";
+// import Notifications from "./components/Notifications";
 import UserProfile from "./components/UserProfile";
 
 const AppContent: React.FC = () => {
@@ -26,13 +26,13 @@ const AppContent: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleMarkAsRead = (notificationId: string) => {
-    setNotificationCount((prev) => Math.max(0, prev - 1));
-  };
+  // const handleMarkAsRead = (notificationId: string) => {
+  //   setNotificationCount((prev) => Math.max(0, prev - 1));
+  // };
 
-  const handleDeleteNotification = (notificationId: string) => {
-    setNotificationCount((prev) => Math.max(0, prev - 1));
-  };
+  // const handleDeleteNotification = (notificationId: string) => {
+  //   setNotificationCount((prev) => Math.max(0, prev - 1));
+  // };
 
   if (!user) {
     return <LoginForm />;
@@ -44,10 +44,11 @@ const AppContent: React.FC = () => {
         return <OrderTracker />;
       case "notifications":
         return (
-          <Notifications
-            onMarkAsRead={handleMarkAsRead}
-            onDelete={handleDeleteNotification}
-          />
+          // <Notifications
+          //   onMarkAsRead={handleMarkAsRead}
+          //   onDelete={handleDeleteNotification}
+          // />
+          <></>
         );
       case "profile":
         return <UserProfile />;
@@ -57,22 +58,21 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-200">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-200">
       <Header
         activeView={activeView}
         onViewChange={setActiveView}
         notificationCount={notificationCount}
       />
 
-      <main className="py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+      <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         {renderActiveView()}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 mt-16 transition-colors duration-200">
+      <footer className="mt-auto bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 transition-colors duration-200">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="text-center text-gray-500 dark:text-slate-400 text-sm">
-            <p>&copy; 2024 Orbit. All rights reserved.</p>
+            <p>&copy; 2025 Orbit. All rights reserved.</p>
           </div>
         </div>
       </footer>
