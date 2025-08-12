@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - orbit-network
+      - backend
 
   order-service:
     build:
@@ -22,8 +22,10 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
+      - kafka
     networks:
-      - orbit-network
+      - backend
+      - messaging
 
   notification-service:
     build:
@@ -35,17 +37,35 @@ services:
     ports:
       - "8083:8083"
     depends_on:
+      - kafka
       - postgres
     networks:
-      - orbit-network
+      - backend
+      - messaging
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    env_file:
+      - ./user-service/.env
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+    networks:
+      - backend
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
-    container_name: zk
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     ports:
       - "2181:2181"
+    networks:
+      - messaging
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -61,10 +81,14 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
       - "9092:9092"
-      
+    networks:
+      - messaging
+
 volumes:
   postgres_data:
 
 networks:
-  orbit-network:
-      driver: bridge
+  backend:
+    driver: bridge
+  messaging:
+    driver: bridge
