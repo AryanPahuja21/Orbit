@@ -1,5 +1,8 @@
 package com.aryan.orbit.controller;
 
+import com.aryan.orbit.dto.OrderRequestDto;
+import com.aryan.orbit.dto.OrderStatusUpdateRequestDto;
+import com.aryan.orbit.mapper.OrderMapper;
 import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.service.OrderService;
@@ -21,7 +24,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
+    public ResponseEntity<Order> createOrder(@RequestBody OrderRequestDto requestOrder) {
+        Order order = OrderMapper.toEntity(requestOrder);
         return ResponseEntity.ok(orderService.createOrder(order));
     }
 
@@ -51,8 +55,8 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatus newStatus) {
-        boolean updated = orderService.updateStatus(orderId, newStatus);
+    public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatusUpdateRequestDto newStatus) {
+        boolean updated = orderService.updateStatus(orderId, newStatus.getStatus());
         return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }
