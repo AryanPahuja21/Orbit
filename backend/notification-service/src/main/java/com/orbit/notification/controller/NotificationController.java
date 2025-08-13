@@ -1,7 +1,7 @@
 package com.orbit.notification.controller;
 
 import com.orbit.notification.dto.NotificationRequest;
-import com.orbit.notification.model.Notification;
+import com.orbit.notification.dto.NotificationResponse;
 import com.orbit.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ public class NotificationController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable String userId) {
+    public ResponseEntity<List<NotificationResponse>> getUserNotifications(@PathVariable String userId) {
         return ResponseEntity.ok(notificationService.getUserNotifications(userId));
     }
 }

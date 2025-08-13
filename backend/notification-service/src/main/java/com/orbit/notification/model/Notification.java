@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "notifications", schema = "notification-service-schema")
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

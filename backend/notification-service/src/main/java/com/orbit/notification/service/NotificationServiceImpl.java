@@ -1,15 +1,17 @@
 package com.orbit.notification.service;
 
 import com.orbit.notification.dto.NotificationRequest;
+import com.orbit.notification.dto.NotificationResponse;
 import com.orbit.notification.dto.OrderEvent;
+import com.orbit.notification.mapper.NotificationMapper;
 import com.orbit.notification.model.Notification;
 import com.orbit.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,32 +22,33 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void sendNotification(NotificationRequest request) {
-        Notification notification = Notification.builder()
-                .userId(request.getUserId())
-                .message(request.getMessage())
-                .createdAt(LocalDateTime.now())
-                .build();
+        // Convert DTO → Entity
+        Notification notification = NotificationMapper.toEntity(request);
         notificationRepository.save(notification);
+        log.info("Notification saved for user {}: {}", notification.getUserId(), notification.getMessage());
     }
 
     @Override
-    public List<Notification> getUserNotifications(String userId) {
-        return notificationRepository.findByUserId(userId);
+    public List<NotificationResponse> getUserNotifications(String userId) {
+        // Fetch entities and convert → DTOs
+        return notificationRepository.findByUserId(userId).stream()
+                .map(NotificationMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void handleOrderEvent(OrderEvent event) {
         try {
-            // Convert OrderEvent → Notification
+            // Convert OrderEvent → Notification entity
             Notification notification = Notification.builder()
                     .userId(event.getCustomerId())
                     .message("Your order #" + event.getOrderId() + " has been placed successfully.")
                     .timestamp(System.currentTimeMillis())
+                    .createdAt(java.time.LocalDateTime.now())
                     .build();
 
             // Save in DB
             notificationRepository.save(notification);
-
             log.info("Notification saved for user {}: {}", notification.getUserId(), notification.getMessage());
 
         } catch (Exception e) {
