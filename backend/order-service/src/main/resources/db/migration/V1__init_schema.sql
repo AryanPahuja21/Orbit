@@ -1,4 +1,4 @@
-CREATE TABLE orders (
+CREATE TABLE "order-service-schema".orders (
     id BIGSERIAL PRIMARY KEY,
     customer_id VARCHAR(255) NOT NULL,
     status VARCHAR(50),
@@ -6,7 +6,7 @@ CREATE TABLE orders (
     updated_at TIMESTAMP
 );
 
-CREATE TABLE order_item (
+CREATE TABLE "order-service-schema".order_item (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL,
     product_id VARCHAR(255),

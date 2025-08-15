@@ -4,6 +4,8 @@ import com.orbit.notification.dto.NotificationRequest;
 import com.orbit.notification.dto.NotificationResponse;
 import com.orbit.notification.model.Notification;
 
+import java.time.Instant;
+
 public class NotificationMapper {
 
     public static Notification toEntity(NotificationRequest request) {
@@ -12,7 +14,7 @@ public class NotificationMapper {
         return Notification.builder()
                 .userId(request.getUserId())
                 .message(request.getMessage())
-                .timestamp(System.currentTimeMillis())
+                .timestamp(Instant.now())
                 .createdAt(java.time.LocalDateTime.now())
                 .build();
     }

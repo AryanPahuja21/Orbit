@@ -29,7 +29,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(Order order) {
         orderRepository.save(order);
 
-        OrderEvent event = new OrderEvent(order.getId(), order.getCustomerId(), "ORDER_CREATED", "CREATED", Instant.now());
+        OrderEvent event = new OrderEvent(order.getId(), order.getCustomerId(), "ORDER_CREATED", OrderStatus.CREATED, Instant.now());
         orderEventProducer.publish(event);
         return order;
     }
@@ -58,6 +58,10 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus(newStatus);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepository.save(order);
+
+            OrderEvent event = new OrderEvent(order.getId(), order.getCustomerId(), "ORDER_STATUS_UPDATED", order.getStatus(), Instant.now());
+            orderEventProducer.publish(event);
+
             return true;
         }
 

@@ -3,6 +3,7 @@ package com.orbit.notification.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +19,7 @@ public class Notification {
 
     private String userId;
     private String message;
-    private Long timestamp;
+    private OrderStatus status;
+    private Instant timestamp;
     private LocalDateTime createdAt;
 }

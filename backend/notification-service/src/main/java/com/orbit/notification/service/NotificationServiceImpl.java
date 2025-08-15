@@ -5,11 +5,14 @@ import com.orbit.notification.dto.NotificationResponse;
 import com.orbit.notification.dto.OrderEvent;
 import com.orbit.notification.mapper.NotificationMapper;
 import com.orbit.notification.model.Notification;
+import com.orbit.notification.model.OrderStatus;
 import com.orbit.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,12 +42,20 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void handleOrderEvent(OrderEvent event) {
         try {
-            // Convert OrderEvent → Notification entity
+            String messageTemplate = "";
+            if(event.getEventType().equals("ORDER_CREATED")) {
+                messageTemplate = "New order placed with order ID: " + event.getOrderId();
+            }
+            else if(event.getEventType().equals("ORDER_STATUS_UPDATED")) {
+                messageTemplate = "Order status updated for order ID: " + event.getOrderId() + " to " + event.getStatus() + ".";
+            }
+
             Notification notification = Notification.builder()
                     .userId(event.getCustomerId())
-                    .message("Your order #" + event.getOrderId() + " has been placed successfully.")
-                    .timestamp(System.currentTimeMillis())
-                    .createdAt(java.time.LocalDateTime.now())
+                    .message(messageTemplate)
+                    .status(OrderStatus.valueOf(event.getStatus()))
+                    .timestamp(Instant.now())
+                    .createdAt(LocalDateTime.now())
                     .build();
 
             // Save in DB
@@ -53,7 +64,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         } catch (Exception e) {
             log.error("Error handling order event: {}", event, e);
-            throw e; // Let Kafka's error handler manage retries/DLT
+            throw e;
         }
     }
 }
