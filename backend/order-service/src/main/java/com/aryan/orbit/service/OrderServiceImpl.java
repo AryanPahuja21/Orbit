@@ -1,11 +1,14 @@
 package com.aryan.orbit.service;
 
+import com.aryan.orbit.dto.OrderEvent;
+import com.aryan.orbit.kafka.OrderEventProducer;
 import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,15 +17,21 @@ import java.util.Optional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderEventProducer orderEventProducer;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderEventProducer orderEventProducer) {
         this.orderRepository = orderRepository;
+        this.orderEventProducer = orderEventProducer;
     }
 
     @Override
     public Order createOrder(Order order) {
-        return orderRepository.save(order);
+        orderRepository.save(order);
+
+        OrderEvent event = new OrderEvent(order.getId(), order.getCustomerId(), "ORDER_CREATED", "CREATED", Instant.now());
+        orderEventProducer.publish(event);
+        return order;
     }
 
     @Override

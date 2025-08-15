@@ -1,4 +1,4 @@
-package com.aryan.orbit.events;
+package com.aryan.orbit.kafka;
 
 import com.aryan.orbit.dto.OrderEvent;
 import lombok.RequiredArgsConstructor;
