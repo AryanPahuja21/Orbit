@@ -35,6 +35,11 @@ public class OrderController {
         return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/user/{customerId}")
+    public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable String customerId) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
+    }
+
     @GetMapping
     public List<Order> getAllOrders() {
         return orderService.getAllOrders();
