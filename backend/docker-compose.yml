@@ -23,6 +23,7 @@ services:
     depends_on:
       - postgres
       - kafka
+      - redis
     networks:
       - backend
       - messaging
@@ -84,8 +85,19 @@ services:
     networks:
       - messaging
 
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   backend:
