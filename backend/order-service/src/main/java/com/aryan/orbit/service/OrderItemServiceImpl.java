@@ -2,6 +2,7 @@ package com.aryan.orbit.service;
 
 import com.aryan.orbit.model.OrderItem;
 import com.aryan.orbit.repository.OrderItemRepository;
+import com.exceptions.orbit.exception.OrderItemNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,12 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     public List<OrderItem> getItemsByOrderId(Long orderId) {
-        return orderItemRepository.findByOrderId(orderId);
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+
+        if (items.isEmpty()) {
+            throw new OrderItemNotFoundException(orderId);
+        }
+
+        return items;
     }
 }

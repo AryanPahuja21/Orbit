@@ -5,14 +5,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.4</version>
-		<relativePath/>
-	</parent>
+    <parent>
+        <groupId>com.orbit.parent</groupId>
+        <artifactId>orbit-backend</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<groupId>com.aryan.orbit</groupId>
+    <groupId>com.aryan.orbit</groupId>
 	<artifactId>order-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>order-service</name>
@@ -23,6 +23,15 @@
 		<java.version>17</java.version>
 	</properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.3</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 	<dependencies>
 		<!-- Spring Boot Core -->
 		<dependency>
@@ -57,12 +66,13 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+            <version>11.11.2</version>
 		</dependency>
 
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
-            <version>10.20.1</version>
+            <version>11.11.2</version>
         </dependency>
 
 
@@ -86,6 +96,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.exceptions.orbit</groupId>
+            <artifactId>orbit-exception</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
     </dependencies>
@@ -115,6 +131,11 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+                <plugin>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-maven-plugin</artifactId>
+                    <version>11.11.2</version>
+                </plugin>
 		</plugins>
 	</build>
 

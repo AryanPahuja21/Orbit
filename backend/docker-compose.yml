@@ -1,16 +1,4 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    env_file:
-      - ./order-service/.env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - backend
-
   order-service:
     build:
       context: ./order-service
@@ -21,7 +9,6 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
       - kafka
       - redis
     networks:
@@ -39,7 +26,6 @@ services:
       - "8083:8083"
     depends_on:
       - kafka
-      - postgres
     networks:
       - backend
       - messaging
@@ -53,8 +39,6 @@ services:
       - ./user-service/.env
     ports:
       - "8082:8082"
-    depends_on:
-      - postgres
     networks:
       - backend
 
@@ -96,7 +80,6 @@ services:
       - backend
 
 volumes:
-  postgres_data:
   redis_data:
 
 networks:
