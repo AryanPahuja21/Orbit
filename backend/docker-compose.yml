@@ -78,6 +78,19 @@ services:
       - redis_data:/data
     networks:
       - backend
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - order-service
+      - notification-service
+      - user-service
+    networks:
+      - backend
 
 volumes:
   redis_data:
