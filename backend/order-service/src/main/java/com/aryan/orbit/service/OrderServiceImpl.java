@@ -29,10 +29,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrder(Order order) {
+    @Caching(
+            put = { @CachePut(value = "orders", key = "#result.id") },
+            evict = { @CacheEvict(value = "ordersByCustomer", key = "#request.customerId") }
+    )
+    public Order createOrder(OrderRequest request) {
+        Order order = OrderMapper.toEntity(request);
         orderRepository.save(order);
-
-        clearCache();
 
         OrderEvent event = new OrderEvent(
                 order.getId(),
@@ -55,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Cacheable(value = "orders", key = "'user:' + #customerId")
+    @Cacheable(value = "ordersByCustomer", key = "#customerId")
     public List<Order> getOrdersByCustomerId(String customerId) {
         System.out.println("Fetching orders by customer id from db...");
         List<Order> orders = orderRepository.findByCustomerId(customerId);
@@ -66,13 +69,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Cacheable(value = "orders", key = "'all'")
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
-    }
-
-    @Override
-    @CacheEvict(value = "orders", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "orders", key = "#id"),
+                    @CacheEvict(value = "ordersByCustomer", allEntries = true)
+            }
+    )
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
             throw new OrderNotFoundException(id);
@@ -81,15 +83,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public boolean updateStatus(Long orderId, OrderStatus newStatus) {
+    @Caching(
+            put = { @CachePut(value = "orders", key = "#result.id") },
+            evict = { @CacheEvict(value = "ordersByCustomer", key = "#result.customerId") }
+    )
+    public Order updateStatus(Long orderId, OrderStatus newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
-
-        updateCache(order);
 
         OrderEvent event = new OrderEvent(
                 order.getId(),
@@ -100,15 +104,6 @@ public class OrderServiceImpl implements OrderService {
         );
         orderEventProducer.publish(event);
 
-        return true;
-    }
-
-    @CachePut(value = "orders", key = "#order.id")
-    public Order updateCache(Order order) {
         return order;
-    }
-
-    @CacheEvict(value = "orders", allEntries = true)
-    public void clearCache() {
     }
 }

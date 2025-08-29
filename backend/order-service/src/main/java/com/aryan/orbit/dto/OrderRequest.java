@@ -6,8 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OrderRequestDto {
+public class OrderRequest {
     private String customerId;
-    private String status;
     private List<OrderItem> items;
 }
