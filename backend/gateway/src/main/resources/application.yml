@@ -7,21 +7,14 @@ spring:
 
   cloud:
     gateway:
-      routes:
-        - id: order-service
-          uri: http://order-service:8081
-          predicates:
-            - Path=/orders/**
-        - id: user-service
-          uri: http://user-service:8082
-          predicates:
-            - Path=/api/users/**
-        - id: notification-service
-          uri: http://notification-service:8083
-          predicates:
-            - Path=/api/notifications/**
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
 
 eureka:
   client:
-    register-with-eureka: false
-    fetch-registry: false
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true

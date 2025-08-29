@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
 @EnableCaching
+@EnableEurekaClient
 public class OrbitApplication {
 
 	public static void main(String[] args) {
