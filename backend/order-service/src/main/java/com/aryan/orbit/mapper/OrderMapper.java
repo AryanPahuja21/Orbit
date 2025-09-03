@@ -1,6 +1,6 @@
 package com.aryan.orbit.mapper;
 
-import com.aryan.orbit.dto.OrderRequestDto;
+import com.aryan.orbit.dto.OrderRequest;
 import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderItem;
 import com.aryan.orbit.model.OrderStatus;
@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 public class OrderMapper {
 
-    public static Order toEntity(OrderRequestDto dto) {
+    public static Order toEntity(OrderRequest dto) {
         Order order = Order.builder()
                 .customerId(dto.getCustomerId())
-                .status(OrderStatus.valueOf(dto.getStatus().toUpperCase()))
+                .status(OrderStatus.valueOf("CREATED"))
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

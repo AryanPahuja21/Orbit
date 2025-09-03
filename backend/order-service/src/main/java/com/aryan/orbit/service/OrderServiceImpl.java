@@ -1,7 +1,10 @@
 package com.aryan.orbit.service;
 
+import com.aryan.orbit.client.UserServiceClient;
 import com.aryan.orbit.dto.OrderEvent;
+import com.aryan.orbit.dto.OrderRequest;
 import com.aryan.orbit.kafka.OrderEventProducer;
+import com.aryan.orbit.mapper.OrderMapper;
 import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.repository.OrderRepository;
@@ -10,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,11 +26,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderEventProducer orderEventProducer;
+    private final UserServiceClient userServiceClient;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, OrderEventProducer orderEventProducer) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderEventProducer orderEventProducer, UserServiceClient userServiceClient) {
         this.orderRepository = orderRepository;
         this.orderEventProducer = orderEventProducer;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
@@ -33,9 +40,13 @@ public class OrderServiceImpl implements OrderService {
             put = { @CachePut(value = "orders", key = "#result.id") },
             evict = { @CacheEvict(value = "ordersByCustomer", key = "#request.customerId") }
     )
-    public Order createOrder(OrderRequest request) {
+    public Order createOrder(OrderRequest request, String token) {
         Order order = OrderMapper.toEntity(request);
-        orderRepository.save(order);
+        ResponseEntity<Boolean> response = userServiceClient.validateUser(token, request.getCustomerId());
+
+        if (Boolean.TRUE.equals(response.getBody())) {
+            orderRepository.save(order);
+        }
 
         OrderEvent event = new OrderEvent(
                 order.getId(),

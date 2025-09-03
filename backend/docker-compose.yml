@@ -12,6 +12,7 @@ services:
       - kafka
       - redis
       - eureka-server
+      - user-service
     networks:
       - backend
       - messaging

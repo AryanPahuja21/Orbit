@@ -1,6 +1,6 @@
 package com.aryan.orbit.controller;
 
-import com.aryan.orbit.dto.OrderRequestDto;
+import com.aryan.orbit.dto.OrderRequest;
 import com.aryan.orbit.dto.OrderStatusUpdateRequestDto;
 import com.aryan.orbit.mapper.OrderMapper;
 import com.aryan.orbit.model.Order;
@@ -24,9 +24,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody OrderRequestDto requestOrder) {
-        Order order = OrderMapper.toEntity(requestOrder);
-        return ResponseEntity.ok(orderService.createOrder(order));
+    public ResponseEntity<Order> createOrder(@RequestBody OrderRequest requestOrder,  @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(orderService.createOrder(requestOrder, token));
     }
 
     @GetMapping("/{id}")
@@ -38,11 +37,6 @@ public class OrderController {
     @GetMapping("/user/{customerId}")
     public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable String customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
-    }
-
-    @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
     }
 
     @DeleteMapping("/{id}")
@@ -61,7 +55,7 @@ public class OrderController {
 
     @PutMapping("/{orderId}/status")
     public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatusUpdateRequestDto newStatus) {
-        boolean updated = orderService.updateStatus(orderId, newStatus.getStatus());
-        return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        Order updated = orderService.updateStatus(orderId, newStatus.getStatus());
+        return updated != null ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }
