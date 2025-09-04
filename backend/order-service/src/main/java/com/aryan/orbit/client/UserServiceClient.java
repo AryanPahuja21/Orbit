@@ -11,5 +11,5 @@ public interface UserServiceClient {
 
     @GetMapping("/api/users/validate")
     ResponseEntity<Boolean> validateUser(
-            @RequestHeader("Authorization") String token, String userId);
+            @RequestHeader("Authorization") String token, @RequestParam("userId") String userId);
 }

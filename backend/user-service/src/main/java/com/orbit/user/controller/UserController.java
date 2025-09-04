@@ -4,6 +4,7 @@ import com.orbit.user.dto.*;
 import com.orbit.user.service.UserService;
 import com.orbit.user.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,14 @@ public class UserController {
 
     private final UserService userService;
     private final JwtService jwtService;
+
+    public String extractToken(String header) {
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        throw new RuntimeException("Invalid Authorization header");
+    }
+
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@RequestBody UserRegisterRequest request) {
@@ -45,8 +54,11 @@ public class UserController {
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<String> validateUser(@RequestHeader("Authorization") String token, String userId) {
-        boolean check = jwtService.isTokenValid(token, userId);
-        return check ? ResponseEntity.ok("JWT is validated") : ResponseEntity.badRequest().body("Invalid JWT");
+    public ResponseEntity<Boolean> validateUser(@RequestHeader("Authorization") String token, @RequestParam("userId") String userId) {
+        String extracted = extractToken(token);
+        boolean valid = jwtService.isTokenValid(extracted, userId);
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON) // 👈 force JSON
+                .body(valid);
     }
 }
