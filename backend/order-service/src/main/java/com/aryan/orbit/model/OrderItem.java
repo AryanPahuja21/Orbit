@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 
 @Entity
 @Data
@@ -12,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 @Table(name = "order_item")
-public class OrderItem implements Serializable {
+public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

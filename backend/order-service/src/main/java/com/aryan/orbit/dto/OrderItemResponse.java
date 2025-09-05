@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderResponse implements Serializable {
-    private String customerId;
-    private String status;
-    private List<OrderItemResponse> items;
+public class OrderItemResponse implements Serializable {
+    private String productId;
+    private int quantity;
+    private double price;
 }

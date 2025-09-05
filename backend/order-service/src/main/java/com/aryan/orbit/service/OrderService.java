@@ -1,15 +1,14 @@
 package com.aryan.orbit.service;
 
 import com.aryan.orbit.dto.OrderRequest;
-import com.aryan.orbit.model.Order;
-import com.aryan.orbit.model.OrderStatus;
-
+import com.aryan.orbit.dto.OrderResponse;
+import com.aryan.orbit.dto.OrderStatusUpdateRequest;
 import java.util.List;
 
 public interface OrderService {
-    Order createOrder(OrderRequest order, String token);
-    Order getOrderById(Long id);
-    List<Order> getOrdersByCustomerId(String customerId);
+    OrderResponse createOrder(OrderRequest order, String token);
+    OrderResponse getOrderById(Long id);
+    List<OrderResponse> getOrdersByCustomerId(String customerId);
     void deleteOrder(Long id);
-    Order updateStatus(Long orderId, OrderStatus newStatus);
+    OrderResponse updateStatus(Long orderId, OrderStatusUpdateRequest newStatus);
 }

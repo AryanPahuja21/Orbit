@@ -1,8 +1,8 @@
 package com.aryan.orbit.controller;
 
 import com.aryan.orbit.dto.OrderRequest;
-import com.aryan.orbit.dto.OrderStatusUpdateRequestDto;
-import com.aryan.orbit.mapper.OrderMapper;
+import com.aryan.orbit.dto.OrderResponse;
+import com.aryan.orbit.dto.OrderStatusUpdateRequest;
 import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.service.OrderService;
@@ -24,18 +24,18 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody OrderRequest requestOrder,  @RequestHeader("Authorization") String token) {
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest requestOrder,  @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(orderService.createOrder(requestOrder, token));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        Order order = orderService.getOrderById(id);
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
+        OrderResponse order = orderService.getOrderById(id);
         return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/user/{customerId}")
-    public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable String customerId) {
+    public ResponseEntity<List<OrderResponse>> getOrdersByCustomer(@PathVariable String customerId) {
         return ResponseEntity.ok(orderService.getOrdersByCustomerId(customerId));
     }
 
@@ -47,15 +47,15 @@ public class OrderController {
 
     @GetMapping("/{orderId}/status")
     public ResponseEntity<OrderStatus> getStatus(@PathVariable Long orderId) {
-        Order order = orderService.getOrderById(orderId);
+        OrderResponse order = orderService.getOrderById(orderId);
         return order != null
-                ? ResponseEntity.ok(order.getStatus())
+                ? ResponseEntity.ok(OrderStatus.valueOf(order.getStatus()))
                 : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatusUpdateRequestDto newStatus) {
-        Order updated = orderService.updateStatus(orderId, newStatus.getStatus());
+    public ResponseEntity<Void> updateStatus(@PathVariable Long orderId, @RequestBody OrderStatusUpdateRequest newStatus) {
+        OrderResponse updated = orderService.updateStatus(orderId, newStatus);
         return updated != null ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }

@@ -3,6 +3,8 @@ package com.aryan.orbit.service;
 import com.aryan.orbit.client.UserServiceClient;
 import com.aryan.orbit.dto.OrderEvent;
 import com.aryan.orbit.dto.OrderRequest;
+import com.aryan.orbit.dto.OrderResponse;
+import com.aryan.orbit.dto.OrderStatusUpdateRequest;
 import com.aryan.orbit.kafka.OrderEventProducer;
 import com.aryan.orbit.mapper.OrderMapper;
 import com.aryan.orbit.model.Order;
@@ -16,10 +18,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -29,7 +31,9 @@ public class OrderServiceImpl implements OrderService {
     private final UserServiceClient userServiceClient;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, OrderEventProducer orderEventProducer, UserServiceClient userServiceClient) {
+    public OrderServiceImpl(OrderRepository orderRepository,
+                            OrderEventProducer orderEventProducer,
+                            UserServiceClient userServiceClient) {
         this.orderRepository = orderRepository;
         this.orderEventProducer = orderEventProducer;
         this.userServiceClient = userServiceClient;
@@ -40,10 +44,10 @@ public class OrderServiceImpl implements OrderService {
             put = { @CachePut(value = "orders", key = "#result.id") },
             evict = { @CacheEvict(value = "ordersByCustomer", key = "#request.customerId") }
     )
-    public Order createOrder(OrderRequest request, String token) {
+    public OrderResponse createOrder(OrderRequest request, String token) {
         Order order = OrderMapper.toEntity(request);
-        ResponseEntity<Boolean> response = userServiceClient.validateUser(token, request.getCustomerId());
 
+        ResponseEntity<Boolean> response = userServiceClient.validateUser(token, request.getCustomerId());
         if (Boolean.TRUE.equals(response.getBody())) {
             orderRepository.save(order);
         }
@@ -57,26 +61,29 @@ public class OrderServiceImpl implements OrderService {
         );
         orderEventProducer.publish(event);
 
-        return order;
+        return OrderMapper.toResponse(order);
     }
 
     @Override
     @Cacheable(value = "orders", key = "#id")
-    public Order getOrderById(Long id) {
+    public OrderResponse getOrderById(Long id) {
         System.out.println("Fetching order by id from db...");
-        return orderRepository.findById(id)
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
+        return OrderMapper.toResponse(order);
     }
 
     @Override
     @Cacheable(value = "ordersByCustomer", key = "#customerId")
-    public List<Order> getOrdersByCustomerId(String customerId) {
+    public List<OrderResponse> getOrdersByCustomerId(String customerId) {
         System.out.println("Fetching orders by customer id from db...");
         List<Order> orders = orderRepository.findByCustomerId(customerId);
         if (orders.isEmpty()) {
             throw new OrderNotFoundException(-1L);
         }
-        return orders;
+        return orders.stream()
+                .map(OrderMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -98,7 +105,8 @@ public class OrderServiceImpl implements OrderService {
             put = { @CachePut(value = "orders", key = "#result.id") },
             evict = { @CacheEvict(value = "ordersByCustomer", key = "#result.customerId") }
     )
-    public Order updateStatus(Long orderId, OrderStatus newStatus) {
+    public OrderResponse updateStatus(Long orderId, OrderStatusUpdateRequest status) {
+        OrderStatus newStatus = status.getStatus();
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -115,6 +123,6 @@ public class OrderServiceImpl implements OrderService {
         );
         orderEventProducer.publish(event);
 
-        return order;
+        return OrderMapper.toResponse(order);
     }
 }
