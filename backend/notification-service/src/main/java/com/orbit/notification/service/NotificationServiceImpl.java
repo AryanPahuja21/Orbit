@@ -25,29 +25,45 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void sendNotification(NotificationRequest request) {
-        // Convert DTO → Entity
+        log.info("Sending notification to userId={}", request.getUserId());
+        log.debug("NotificationRequest payload: {}", request);
+
         Notification notification = NotificationMapper.toEntity(request);
         notificationRepository.save(notification);
-        log.info("Notification saved for user {}: {}", notification.getUserId(), notification.getMessage());
+
+        log.info("Notification saved successfully for userId={}: {}", notification.getUserId(), notification.getMessage());
     }
 
     @Override
     public List<NotificationResponse> getUserNotifications(String userId) {
-        // Fetch entities and convert → DTOs
-        return notificationRepository.findByUserId(userId).stream()
+        log.info("Fetching notifications for userId={}", userId);
+
+        List<NotificationResponse> notifications = notificationRepository.findByUserId(userId).stream()
                 .map(NotificationMapper::toDto)
                 .collect(Collectors.toList());
+
+        if (notifications.isEmpty()) {
+            log.warn("No notifications found for userId={}", userId);
+        } else {
+            log.info("Found {} notifications for userId={}", notifications.size(), userId);
+            log.debug("Notification details: {}", notifications);
+        }
+
+        return notifications;
     }
 
     @Override
     public void handleOrderEvent(OrderEvent event) {
+        log.info("Handling order event: {}", event);
+
         try {
             String messageTemplate = "";
-            if(event.getEventType().equals("ORDER_CREATED")) {
+            if (event.getEventType().equals("ORDER_CREATED")) {
                 messageTemplate = "New order placed with order ID: " + event.getOrderId();
-            }
-            else if(event.getEventType().equals("ORDER_STATUS_UPDATED")) {
+            } else if (event.getEventType().equals("ORDER_STATUS_UPDATED")) {
                 messageTemplate = "Order status updated for order ID: " + event.getOrderId() + " to " + event.getStatus() + ".";
+            } else {
+                log.warn("Unhandled order event type: {}", event.getEventType());
             }
 
             Notification notification = Notification.builder()
@@ -58,9 +74,8 @@ public class NotificationServiceImpl implements NotificationService {
                     .createdAt(LocalDateTime.now())
                     .build();
 
-            // Save in DB
             notificationRepository.save(notification);
-            log.info("Notification saved for user {}: {}", notification.getUserId(), notification.getMessage());
+            log.info("Notification saved for userId={}: {}", notification.getUserId(), notification.getMessage());
 
         } catch (Exception e) {
             log.error("Error handling order event: {}", event, e);
