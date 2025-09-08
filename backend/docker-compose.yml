@@ -13,6 +13,8 @@ services:
       - redis
       - eureka-server
       - user-service
+    volumes:
+      - ./order-service/logs:/app/order-service/logs
     networks:
       - backend
       - messaging
@@ -29,6 +31,8 @@ services:
     depends_on:
       - kafka
       - eureka-server
+    volumes:
+      - ./notification-service/logs:/app/notification-service/logs
     networks:
       - backend
       - messaging
@@ -44,6 +48,8 @@ services:
       - "8082:8082"
     depends_on:
       - eureka-server
+    volumes:
+      - ./user-service/logs:/app/user-service/logs
     networks:
       - backend
 
