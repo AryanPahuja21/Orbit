@@ -16,7 +16,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Handle resource not found
+    // -------------------- ORDER & COMMON EXCEPTIONS --------------------
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
@@ -49,7 +49,74 @@ public class GlobalExceptionHandler {
         ), HttpStatus.NOT_FOUND);
     }
 
-    // Handle validation errors
+    @ExceptionHandler(InvalidOrderStatusException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrderStatusException(InvalidOrderStatusException ex, HttpServletRequest request){
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Status",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.BAD_REQUEST);
+    }
+
+    // -------------------- USER EXCEPTIONS --------------------
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "User Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Email Already Exists",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Invalid Credentials",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedAction(UnauthorizedActionException ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UserAlreadyVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyVerified(UserAlreadyVerifiedException ex, HttpServletRequest request) {
+        return new ResponseEntity<>(new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Already Verified",
+                ex.getMessage(),
+                request.getRequestURI()
+        ), HttpStatus.BAD_REQUEST);
+    }
+
+    // -------------------- VALIDATION --------------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -59,7 +126,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle business logic exceptions
+    // -------------------- BUSINESS --------------------
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         log.error("Business error: {}", ex.getMessage());
@@ -70,7 +137,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Handle unauthorized access
+    // -------------------- UNAUTHORIZED --------------------
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
         log.warn("Unauthorized: {}", ex.getMessage());
@@ -81,7 +148,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    // Catch-all handler
+    // -------------------- GENERIC --------------------
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error: ", ex);
