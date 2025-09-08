@@ -11,6 +11,7 @@ import com.aryan.orbit.model.Order;
 import com.aryan.orbit.model.OrderStatus;
 import com.aryan.orbit.repository.OrderRepository;
 import com.exceptions.orbit.exception.OrderNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -18,7 +19,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.util.EnumUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
@@ -47,11 +48,20 @@ public class OrderServiceImpl implements OrderService {
             evict = { @CacheEvict(value = "ordersByCustomer", key = "#request.customerId") }
     )
     public OrderResponse createOrder(OrderRequest request, String token) {
+        log.info("Creating order for customerId={}", request.getCustomerId());
+        log.debug("OrderRequest payload: {}", request);
+
         Order order = OrderMapper.toEntity(request);
 
         ResponseEntity<Boolean> response = userServiceClient.validateUser(token, request.getCustomerId());
+        log.debug("User validation response for customerId={}: {}", request.getCustomerId(), response.getBody());
+
         if (Boolean.TRUE.equals(response.getBody())) {
             orderRepository.save(order);
+            log.info("Order saved successfully with id={}", order.getId());
+        } else {
+            log.warn("User validation failed for customerId={}", request.getCustomerId());
+            throw new OrderNotFoundException(-1L); // or custom exception
         }
 
         OrderEvent event = new OrderEvent(
@@ -62,6 +72,7 @@ public class OrderServiceImpl implements OrderService {
                 Instant.now()
         );
         orderEventProducer.publish(event);
+        log.info("ORDER_CREATED event published for orderId={}", order.getId());
 
         return OrderMapper.toResponse(order);
     }
@@ -69,20 +80,28 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Cacheable(value = "orders", key = "#id")
     public OrderResponse getOrderById(Long id) {
-        System.out.println("Fetching order by id from db...");
+        log.info("Fetching order by id={}", id);
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> {
+                    log.warn("Order not found with id={}", id);
+                    return new OrderNotFoundException(id);
+                });
+        log.info("Order retrieved successfully with id={}", id);
         return OrderMapper.toResponse(order);
     }
 
     @Override
     @Cacheable(value = "ordersByCustomer", key = "#customerId")
     public List<OrderResponse> getOrdersByCustomerId(String customerId) {
-        System.out.println("Fetching orders by customer id from db...");
+        log.info("Fetching orders for customerId={}", customerId);
         List<Order> orders = orderRepository.findByCustomerId(customerId);
+
         if (orders.isEmpty()) {
+            log.warn("No orders found for customerId={}", customerId);
             throw new OrderNotFoundException(-1L);
         }
+
+        log.info("Found {} orders for customerId={}", orders.size(), customerId);
         return orders.stream()
                 .map(OrderMapper::toResponse)
                 .collect(Collectors.toList());
@@ -96,10 +115,13 @@ public class OrderServiceImpl implements OrderService {
             }
     )
     public void deleteOrder(Long id) {
+        log.info("Deleting order with id={}", id);
         if (!orderRepository.existsById(id)) {
+            log.warn("Order not found for deletion, id={}", id);
             throw new OrderNotFoundException(id);
         }
         orderRepository.deleteById(id);
+        log.info("Order deleted successfully with id={}", id);
     }
 
     @Override
@@ -108,11 +130,15 @@ public class OrderServiceImpl implements OrderService {
             evict = { @CacheEvict(value = "ordersByCustomer", key = "#result.customerId") }
     )
     public OrderResponse updateStatus(Long orderId, OrderStatusUpdateRequest status) {
-        OrderStatus newStatus = status.getStatus();
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        log.info("Updating order status for orderId={} to {}", orderId, status.getStatus());
 
-        order.setStatus(newStatus);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.warn("Order not found for status update, orderId={}", orderId);
+                    return new OrderNotFoundException(orderId);
+                });
+
+        order.setStatus(status.getStatus());
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
 
@@ -124,6 +150,7 @@ public class OrderServiceImpl implements OrderService {
                 Instant.now()
         );
         orderEventProducer.publish(event);
+        log.info("ORDER_STATUS_UPDATED event published for orderId={}", order.getId());
 
         return OrderMapper.toResponse(order);
     }
