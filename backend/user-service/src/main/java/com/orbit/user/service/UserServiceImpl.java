@@ -4,6 +4,9 @@ import com.orbit.user.dto.*;
 import com.orbit.user.model.User;
 import com.orbit.user.repository.UserRepository;
 import com.orbit.user.security.JwtService;
+import com.exceptions.orbit.exception.UserNotFoundException;
+import com.exceptions.orbit.exception.EmailAlreadyExistsException;
+import com.exceptions.orbit.exception.InvalidCredentialsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse registerUser(UserRegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered.");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = User.builder()
@@ -42,32 +45,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthResponse loginUser(UserLoginRequest request) {
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
-
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("User not found.");
-        }
-
-        User user = userOptional.get();
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(request.getEmail()));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials.");
+            throw new InvalidCredentialsException();
         }
 
         Map<String, Object> extraClaims = new HashMap<>();
-
         extraClaims.put("role", user.getRole());
         extraClaims.put("userId", String.valueOf(user.getId()));
 
         String jwtToken = jwtService.generateToken(extraClaims, user.getEmail());
 
-        return new AuthResponse(jwtToken, "Login Successul");
+        return new AuthResponse(jwtToken, "Login Successful");
     }
+
 
     @Override
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         user.setFullName(request.getFullName());
 
@@ -86,14 +84,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new UserNotFoundException(id));
         return mapToResponse(user);
     }
 
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found.");
+            throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
     }

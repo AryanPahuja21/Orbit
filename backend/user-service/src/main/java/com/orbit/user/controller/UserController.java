@@ -58,7 +58,7 @@ public class UserController {
         String extracted = extractToken(token);
         boolean valid = jwtService.isTokenValid(extracted, userId);
         return ResponseEntity.ok()
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON) // 👈 force JSON
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .body(valid);
     }
 }

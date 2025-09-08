@@ -5,6 +5,7 @@ import com.orbit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
+import com.exceptions.orbit.exception.UserNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())

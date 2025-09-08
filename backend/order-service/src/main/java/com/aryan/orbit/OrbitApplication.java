@@ -6,7 +6,10 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "com.aryan.orbit",
+        "com.exceptions.orbit"
+})
 @EnableCaching
 @EnableDiscoveryClient
 @EnableFeignClients
